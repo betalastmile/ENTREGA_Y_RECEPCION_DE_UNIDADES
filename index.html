@@ -231,12 +231,12 @@ function validarTelefonos() {
   <!-- SEGURIDAD -->
   <fieldset>
     <legend>ELEMENTOS DE SEGURIDAD (MARCA LOS QUE SÍ TIENE LA UNIDAD)</legend>
-    <label><input type="checkbox" id="llanta"> MANUALES</label>
+    <label><input type="checkbox" id="manuales"> MANUALES</label>
     <label><input type="checkbox" id="llanta"> LLANTA DE REFACCIÓN</label>
     <label><input type="checkbox" id="extintor"> EXTINTOR</label>
     <label><input type="checkbox" id="triangulos"> TRIÁNGULOS</label>
     <label><input type="checkbox" id="herramientas"> HERRAMIENTAS</label>
-    <label><input type="checkbox" id="herramientas"> GATO HIDRÁULICO</label>
+    <label><input type="checkbox" id="gato"> GATO HIDRÁULICO</label>
   </fieldset>
 
   <!-- OBSERVACIONES -->
@@ -319,7 +319,7 @@ function validarTelefonos() {
 </div>
 
 <script>
-var WEBAPP = "https://script.google.com/macros/s/AKfycbwNzm08mjlofVUba2EdILeqGsQ4sAOE2PHydhcIxfa3ocPN_bkjwBFA5SnMDqIr6KEj/exec";
+var WEBAPP = "https://script.google.com/macros/s/AKfycbwSt0gfKjpN_uvPnFhQPZ8JapLkzy_uifCOIpE9BqDrHNQzPrzsn_aG60t3AV5MjLyi/exec";
 
 var flotilla     = [];
 var indiceActivo = -1;
@@ -623,10 +623,12 @@ function enviarFormulario() {
     aceite       : document.getElementById("aceite").value,
     refrigerante : document.getElementById("refrigerante").value,
     frenos       : document.getElementById("frenos").value,
+    manuales     : document.getElementById("manuales").checked,
     llanta       : document.getElementById("llanta").checked,
     extintor     : document.getElementById("extintor").checked,
     triangulos   : document.getElementById("triangulos").checked,
     herramientas : document.getElementById("herramientas").checked,
+    gato         : document.getElementById("gato").checked,
     observaciones: document.getElementById("observaciones").value,
     nombre_entrega  : document.getElementById("nombre_entrega").value,
     telefono_entrega: document.getElementById("telefono_entrega").value,
@@ -781,7 +783,7 @@ function limpiarFormulario() {
   ["observaciones","nombre_entrega","telefono_entrega","nombre_recibe","telefono_recibe","num_licencia"]
     .forEach(function (id) { document.getElementById(id).value = ""; });
   document.getElementById("tipo_licencia").selectedIndex = 0;
-  ["llanta","extintor","triangulos","herramientas"]
+  ["manuales","llanta","extintor","triangulos","herramientas","gato"]
     .forEach(function (id) { document.getElementById(id).checked = false; });
   ["combustible","aceite","refrigerante","frenos"]
     .forEach(function (id) { document.getElementById(id).selectedIndex = 0; });
