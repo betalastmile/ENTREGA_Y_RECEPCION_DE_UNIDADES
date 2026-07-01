@@ -319,7 +319,7 @@ function validarTelefonos() {
 </div>
 
 <script>
-var WEBAPP = "https://script.google.com/macros/s/AKfycbwSt0gfKjpN_uvPnFhQPZ8JapLkzy_uifCOIpE9BqDrHNQzPrzsn_aG60t3AV5MjLyi/exec";
+var WEBAPP = "https://script.google.com/macros/s/AKfycbwxQFhSvuWXguWkGZPQIQYS12gn00cRMPcZS6cismFQ5QhinlMMBZWfrHK9v14Uy3O9/exec";
 
 var flotilla     = [];
 var indiceActivo = -1;
@@ -671,52 +671,52 @@ async function descargarPDFYWhatsApp(payload) {
     document.querySelector(".btn-row").style.display   = "none";
     document.getElementById("statusMsg").style.display = "none";
 
-    // Capturar el formulario completo con alta resolución
-    var c = await html2canvas(form, { scale: 2, useCORS: true });
+    // Capturar el formulario completo
+    var c = await html2canvas(form, { scale: 1.2, useCORS: true });
 
     document.querySelector(".btn-row").style.display   = "";
     document.getElementById("statusMsg").style.display = "";
 
     var pdf   = new window.jspdf.jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    var pdfW  = pdf.internal.pageSize.getWidth();   // 210 mm
-    var pageH = pdf.internal.pageSize.getHeight();  // 297 mm
-    var MARGIN = 10; // mm de margen en todos los lados
-    var printW = pdfW - MARGIN * 2;                 // ancho imprimible
+    var pdfW  = pdf.internal.pageSize.getWidth();
+    var pageH = pdf.internal.pageSize.getHeight();
+    var PAGES = 4;
 
-    // Calcular cuántos px del canvas caben en una página A4
-    // pxPorMM = c.width / printW
-    var pxPorMM  = c.width / printW;
-    var pxPorPag = (pageH - MARGIN * 2) * pxPorMM; // px de canvas por página
+    // Dividir el canvas en 4 franjas iguales
+    var sliceH = Math.floor(c.height / PAGES);
 
-    var totalPags = Math.ceil(c.height / pxPorPag);
-
-    var ahora    = new Date();
-    var fechaStr = ahora.toLocaleDateString("es-MX", { day:"2-digit", month:"2-digit", year:"numeric" });
-    var horaStr  = ahora.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
-
-    for (var p = 0; p < totalPags; p++) {
+    for (var p = 0; p < PAGES; p++) {
       if (p > 0) pdf.addPage();
 
-      var srcY   = Math.floor(p * pxPorPag);
-      var srcH   = Math.min(pxPorPag, c.height - srcY);
-
-      // Canvas temporal para esta franja
+      // Crear canvas temporal para esta franja
       var tmp    = document.createElement("canvas");
       tmp.width  = c.width;
-      tmp.height = srcH;
-      tmp.getContext("2d").drawImage(c, 0, srcY, c.width, srcH, 0, 0, c.width, srcH);
+      tmp.height = (p < PAGES - 1) ? sliceH : (c.height - sliceH * (PAGES - 1));
+      var tctx   = tmp.getContext("2d");
+      tctx.drawImage(c, 0, p * sliceH, tmp.width, tmp.height, 0, 0, tmp.width, tmp.height);
 
-      // Alto real en mm que ocupa esta franja
-      var imgH = srcH / pxPorMM;
+      // Escalar la franja para que ocupe la página completa
+      var imgH = (tmp.height * pdfW) / tmp.width;
+      pdf.addImage(tmp.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, pdfW, Math.min(imgH, pageH));
 
-      pdf.addImage(tmp.toDataURL("image/jpeg", 0.92), "JPEG", MARGIN, MARGIN, printW, imgH);
+      // --- Sello de folio en cada página ---
+      var ahora    = new Date();
+      var fechaStr = ahora.toLocaleDateString("es-MX", { day:"2-digit", month:"2-digit", year:"numeric" });
+      var horaStr  = ahora.toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" });
 
-      // --- Pie de página discreto (solo texto, sin recuadro) ---
-      pdf.setTextColor(150, 150, 150);
+      pdf.setFillColor(26, 35, 126);
+      pdf.roundedRect(pdfW - 72, 4, 68, 18, 3, 3, "F");
+      pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(7);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("FOLIO", pdfW - 68, 10.5);
+      pdf.setFontSize(9);
+      pdf.text(FOLIO_ACTUAL, pdfW - 68, 17);
+
+      pdf.setTextColor(80, 80, 80);
+      pdf.setFontSize(6);
       pdf.setFont("helvetica", "normal");
-      var pieTexto = "FOLIO: " + FOLIO_ACTUAL + "   |   " + fechaStr + "  " + horaStr + "   |   PÁG. " + (p+1) + "/" + totalPags;
-      pdf.text(pieTexto, pdfW / 2, pageH - 4, { align: "center" });
+      pdf.text(fechaStr + "  " + horaStr + "   Pág. " + (p+1) + "/" + PAGES, pdfW - 68, 26);
     }
 
     var nombrePDF = "Entrega_Recepcion_" + (payload.placa || "unidad") + "_" + FOLIO_ACTUAL + ".pdf";
@@ -727,7 +727,7 @@ async function descargarPDFYWhatsApp(payload) {
       setTimeout(function () { location.reload(); }, 800);
     }, 1200);
 
-    setStatus("✅ PDF descargado (" + totalPags + " hojas). Abriendo WhatsApp...", "ok");
+    setStatus("✅ PDF descargado (3 hojas). Abriendo WhatsApp...", "ok");
   } catch (e) {
     setStatus("⚠ PDF generado con advertencia. Abriendo WhatsApp...", "ok");
     setTimeout(function () {
