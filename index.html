@@ -309,6 +309,10 @@ function validarTelefonos() {
         <input type="tel" id="telefono_recibe" placeholder="10 DÍGITOS" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10); validarTelefonos();">
       </div>
     </div>
+    <div style="padding:10px 0;">
+      <label><strong>GERENTE A CARGO:</strong> <span class="req">*</span></label>
+      <input type="text" id="gerente_a_cargo" placeholder="NOMBRE COMPLETO">
+    </div>
   </fieldset>
 
   <div class="btn-row">
@@ -440,7 +444,7 @@ function validarFormulario() {
   marcar("observaciones", !document.getElementById("observaciones").value.trim());
 
   // Datos de entrega/recepción — nombres
-  ["nombre_entrega","nombre_recibe"].forEach(function(id) {
+  ["nombre_entrega","nombre_recibe","gerente_a_cargo"].forEach(function(id) {
     marcar(id, !document.getElementById(id).value.trim());
   });
 
@@ -634,6 +638,7 @@ function enviarFormulario() {
     telefono_entrega: document.getElementById("telefono_entrega").value,
     nombre_recibe   : document.getElementById("nombre_recibe").value,
     telefono_recibe : document.getElementById("telefono_recibe").value,
+    gerente_a_cargo : document.getElementById("gerente_a_cargo").value,
     foto_frontal          : document.getElementById("canvasFrontal").toDataURL("image/jpeg", 0.4),
     foto_trasera          : document.getElementById("canvasTrasera").toDataURL("image/jpeg", 0.4),
     foto_lat_izq          : document.getElementById("canvasLatIzq").toDataURL("image/jpeg", 0.4),
@@ -763,6 +768,7 @@ function abrirWhatsApp(payload) {
     "━━━━━━━━━━━━━━━━━━━━━━\n" +
     "*Entrega:* " + (payload.nombre_entrega || "N/D") + "\n" +
     "*Recibe:*  " + (payload.nombre_recibe  || "N/D") + "\n" +
+    "*Gerente a cargo:* " + (payload.gerente_a_cargo || "N/D") + "\n" +
     "━━━━━━━━━━━━━━━━━━━━━━\n" +
     "_Se adjunta PDF como constancia de la entrega–recepción._";
 
@@ -780,7 +786,7 @@ function limpiarFormulario() {
   document.getElementById("placaValor").value  = "";
   document.getElementById("kilometraje").value = "";
   limpiarAutocompletado();
-  ["observaciones","nombre_entrega","telefono_entrega","nombre_recibe","telefono_recibe","num_licencia"]
+  ["observaciones","nombre_entrega","telefono_entrega","nombre_recibe","telefono_recibe","gerente_a_cargo","num_licencia"]
     .forEach(function (id) { document.getElementById(id).value = ""; });
   document.getElementById("tipo_licencia").selectedIndex = 0;
   ["manuales","llanta","extintor","triangulos","herramientas","gato"]
