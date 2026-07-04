@@ -322,6 +322,14 @@ function validarTelefonos() {
     </div>
   </fieldset>
 
+  <!-- FOTOS DETALLES ADICIONALES -->
+  <fieldset>
+    <legend>FOTOS - DETALLES ADICIONALES <span style="color:#888; font-weight:normal; font-size:12px;">(OPCIONAL — PUEDES AGREGAR VARIAS)</span></legend>
+    <input type="file" accept="image/*" capture="camera" id="fotoAdicionalInput" style="display:none;">
+    <button type="button" id="btnAgregarFotoAdicional" style="background:#1976d2; color:#fff; border:none; border-radius:6px; padding:10px; width:100%; font-size:15px; cursor:pointer;">📷 AGREGAR FOTO</button>
+    <div id="galeriaAdicionales" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px; margin-top:12px;"></div>
+  </fieldset>
+
   <div class="btn-row">
     <button id="btnEnviar" onclick="enviarFormulario()">💾 GUARDAR Y ENVIAR</button>
   </div>
@@ -330,7 +338,7 @@ function validarTelefonos() {
 </div>
 
 <script>
-var WEBAPP = "https://script.google.com/macros/s/AKfycbwxQFhSvuWXguWkGZPQIQYS12gn00cRMPcZS6cismFQ5QhinlMMBZWfrHK9v14Uy3O9/exec";
+var WEBAPP = "https://script.google.com/macros/s/AKfycbwM4uh-LdvsytB1Z1GzCvbzgKeiSd8HK9zm1JmxXX5dwy1YcmOnbAEnUPWnQB3lIq9H/exec";
 
 var flotilla     = [];
 var indiceActivo = -1;
@@ -605,6 +613,66 @@ function cargarFoto(inputId, canvasId, boxId) {
 }
 
 // =============================================
+//  FOTOS ADICIONALES (múltiples, opcional)
+// =============================================
+var FOTOS_ADICIONALES = []; // array de dataURLs comprimidas
+
+function iniciarFotosAdicionales() {
+  var input = document.getElementById("fotoAdicionalInput");
+  document.getElementById("btnAgregarFotoAdicional").addEventListener("click", function () {
+    input.click();
+  });
+  input.addEventListener("change", function (ev) {
+    var file = ev.target.files[0];
+    input.value = ""; // permitir volver a tomar la misma foto / otra después
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Solo se permiten fotos tomadas desde la cámara.");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement("canvas");
+        canvas.width  = Math.min(img.width, 640);
+        canvas.height = img.height * (canvas.width / img.width);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        var comprimida = canvas.toDataURL("image/jpeg", 0.4);
+        FOTOS_ADICIONALES.push(comprimida);
+        renderGaleriaAdicionales();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderGaleriaAdicionales() {
+  var cont = document.getElementById("galeriaAdicionales");
+  cont.innerHTML = "";
+  FOTOS_ADICIONALES.forEach(function (dataURL, idx) {
+    var wrap = document.createElement("div");
+    wrap.style.cssText = "position:relative; border:1px solid #ddd; border-radius:6px; overflow:hidden; background:#fff;";
+    var img = document.createElement("img");
+    img.src = dataURL;
+    img.style.cssText = "width:100%; height:100px; object-fit:cover; display:block;";
+    var btnDel = document.createElement("button");
+    btnDel.type = "button";
+    btnDel.textContent = "✕";
+    btnDel.style.cssText = "position:absolute; top:3px; right:3px; background:#e53935; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:12px; line-height:1;";
+    btnDel.onclick = function () {
+      FOTOS_ADICIONALES.splice(idx, 1);
+      renderGaleriaAdicionales();
+    };
+    wrap.appendChild(img);
+    wrap.appendChild(btnDel);
+    cont.appendChild(wrap);
+  });
+}
+iniciarFotosAdicionales();
+
+// =============================================
 //  ENVIAR
 // =============================================
 function enviarFormulario() {
@@ -659,7 +727,8 @@ function enviarFormulario() {
     foto_tarjeta_circulacion: document.getElementById("canvasTarjetaCirculacion").toDataURL("image/jpeg", 0.4),
     tipo_licencia         : document.getElementById("tipo_licencia").value,
     num_licencia          : document.getElementById("num_licencia").value,
-    vigencia_licencia     : document.getElementById("vigencia_licencia").value
+    vigencia_licencia     : document.getElementById("vigencia_licencia").value,
+    fotos_adicionales     : FOTOS_ADICIONALES
   };
 
   fetch(WEBAPP, {
@@ -812,6 +881,8 @@ function limpiarFormulario() {
     document.getElementById(f.input).value = "";
     document.getElementById(f.box).classList.remove("foto-error");
   });
+  FOTOS_ADICIONALES = [];
+  renderGaleriaAdicionales();
   document.querySelectorAll(".campo-error").forEach(function(el){ el.classList.remove("campo-error"); });
   document.getElementById("btnEnviar").disabled = false;
   setStatus("", "");
