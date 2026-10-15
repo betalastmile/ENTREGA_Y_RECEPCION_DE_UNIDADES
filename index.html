@@ -250,6 +250,23 @@
     </div>
   </div>
 
+  <!-- ASIGNACIÓN DE LA UNIDAD -->
+  <div class="sec">
+    <h3 class="sec-title">ASIGNACIÓN DE LA UNIDAD</h3>
+    <div class="sec-body">
+      <div class="grid g2">
+        <div>
+          <label>TIENDA: <span class="req">*</span></label>
+          <input type="text" id="tienda" placeholder="EJ.TAXQUEÑA" autocomplete="off" style="text-transform:uppercase">
+        </div>
+        <div>
+          <label>FORMATO: <span class="req">*</span></label>
+          <input type="text" id="formato" placeholder="EJ. BODEGA AURRERA" autocomplete="off" style="text-transform:uppercase">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- LICENCIA -->
   <div class="sec">
     <h3 class="sec-title">LICENCIA DEL CONDUCTOR</h3>
@@ -322,7 +339,7 @@
 
   <!-- OBSERVACIONES -->
   <div class="sec">
-    <h3 class="sec-title">OBSERVACIONES <span class="req">*</span></h3>
+    <h3 class="sec-title">OBSERVACIONES</h3>
     <div class="sec-body">
       <textarea id="observaciones" rows="3" placeholder="ANOTA DETALLES RELEVANTES DE LA RECEPCIÓN..."></textarea>
     </div>
@@ -629,9 +646,6 @@ function validarFormulario() {
     marcar(id, !document.getElementById(id).value);
   });
 
-  // Observaciones
-  marcar("observaciones", !document.getElementById("observaciones").value.trim());
-
   // Datos de entrega/recepción — nombres
   ["nombre_entrega","nombre_recibe","gerente_a_cargo"].forEach(function(id) {
     marcar(id, !document.getElementById(id).value.trim());
@@ -649,6 +663,10 @@ function validarFormulario() {
     setStatus("⚠ Los teléfonos de entrega y recepción no pueden ser iguales.", "err");
     ok = false;
   }
+
+  // Asignación: tienda y formato
+  marcar("tienda",   !document.getElementById("tienda").value.trim());
+  marcar("formato", !document.getElementById("formato").value.trim());
 
   // Licencia
   marcar("tipo_licencia", !document.getElementById("tipo_licencia").value);
@@ -874,6 +892,8 @@ function enviarFormulario() {
     serie        : document.getElementById("serie").value,
     tipo         : document.getElementById("tipo").value,
     kilometraje  : document.getElementById("kilometraje").value,
+    tienda       : document.getElementById("tienda").value.trim().toUpperCase(),
+    formato     : document.getElementById("formato").value.trim().toUpperCase(),
     combustible  : document.getElementById("combustible").value,
     aceite       : document.getElementById("aceite").value,
     refrigerante : document.getElementById("refrigerante").value,
@@ -1018,6 +1038,8 @@ function abrirWhatsApp(payload) {
     "   • Unidad:   " + unidad + "\n" +
     "   • Serie:    " + (payload.serie || "N/D") + "\n" +
     "   • Km:       " + (payload.kilometraje || "N/D") + " km\n" +
+    "   • Tienda:   " + (payload.tienda || "N/D") + "\n" +
+    "   • Formato:  " + (payload.formato || "N/D") + "\n" +
     "   • Licencia: " + (payload.tipo_licencia || "N/D") + " — " + (payload.num_licencia || "N/D") + "\n" +
     "   • Vigencia:  " + (payload.vigencia_licencia || "N/D") + "\n" +
     "━━━━━━━━━━━━━━━━━━━━━━\n" +
@@ -1041,7 +1063,7 @@ function limpiarFormulario() {
   document.getElementById("placaValor").value  = "";
   document.getElementById("kilometraje").value = "";
   limpiarAutocompletado();
-  ["observaciones","nombre_entrega","telefono_entrega","nombre_recibe","telefono_recibe","gerente_a_cargo","num_licencia","vigencia_licencia"]
+  ["observaciones","nombre_entrega","telefono_entrega","nombre_recibe","telefono_recibe","gerente_a_cargo","num_licencia","vigencia_licencia","tienda","formato"]
     .forEach(function (id) { document.getElementById(id).value = ""; });
   document.getElementById("tipo_licencia").selectedIndex = 0;
   ["manuales","llanta","extintor","triangulos","herramientas","gato"]
